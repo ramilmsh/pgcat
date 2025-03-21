@@ -4,6 +4,10 @@ metadata:
   name: {{ include "pgcat.fullname" . }}
   labels:
     {{- include "pgcat.labels" . | nindent 4 }}
+  {{- with .Values.podAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
@@ -36,6 +40,11 @@ spec:
             - name: pgcat
               containerPort: {{ .Values.configuration.general.port }}
               protocol: TCP
+            {{- if .Values.configuration.general.enable_prometheus_exporter }}
+            - name: metrics
+              containerPort: {{ .Values.configuration.general.prometheus_exporter_port }}
+              protocol: TCP
+            {{- end }}
           livenessProbe:
             tcpSocket:
               port: pgcat
